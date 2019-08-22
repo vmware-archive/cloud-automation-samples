@@ -1,0 +1,139 @@
+# CAS API Token
+@refreshToken = ""
+
+@bearer = {{login.response.body.token}}
+
+### login
+# @name login
+POST https://api.mgmt.cloud.vmware.com/iaas/login HTTP/1.1
+Accept: application/json
+Content-Type: application/json  
+
+{"refreshToken": {{refreshToken}} }
+
+###
+
+GET https://api.mgmt.cloud.vmware.com/blueprint/api/blueprints
+Accept: application/json
+Content-Type: application/json  
+Authorization: Bearer {{bearer}}
+
+
+### Get Titov3 blueprint
+
+GET https://api.mgmt.cloud.vmware.com/blueprint/api/blueprints/92881ec6-6672-4a77-9e24-32d0870c970f
+Accept: application/json
+Content-Type: application/json  
+Authorization: Bearer {{bearer}}
+
+
+### Get Versions
+
+GET https://api.mgmt.cloud.vmware.com/blueprint/api/blueprints/92881ec6-6672-4a77-9e24-32d0870c970f/versions
+Accept: application/json
+Content-Type: application/json  
+Authorization: Bearer {{bearer}}
+
+### get inputs for blueprint
+
+GET https://api.mgmt.cloud.vmware.com/blueprint/api/blueprints/92881ec6-6672-4a77-9e24-32d0870c970f/inputs-schema
+Accept: application/json
+Content-Type: application/json;;charset=UTF-8  
+Authorization: Bearer {{bearer}}
+
+###
+
+GET https://api.mgmt.cloud.vmware.com/blueprint/api/blueprint-requests
+Accept: application/json
+Content-Type: application/json  
+Authorization: Bearer {{bearer}}
+###
+
+###
+POST https://api.mgmt.cloud.vmware.com/blueprint/api/blueprint-requests
+Accept: application/json
+Content-Type: application/json;charset=UTF-8
+Authorization: Bearer {{bearer}}
+
+{
+  "projectId": "7ea6e1b3-660f-49c9-8937-4f6323cbb096",
+  "reason": "test 1",
+  "plan": false,
+  "destroy": false,
+  "ignoreDeleteFailures": false,
+  "simulate": false,
+  "tags": [],
+  "blueprintId": "92881ec6-6672-4a77-9e24-32d0870c970f",
+  "blueprintVersion": 1.4,
+  "inputs": {
+    "FECount": 1,
+    "application": "Tito",
+    "environment": "dev",
+    "cloud_target": "platform:aws",
+    "wavefront_proxy": "vmware.wavefront.com"
+  }
+}
+
+###
+
+
+get https://api.mgmt.cloud.vmware.com/blueprint/api/blueprint-requests/1cf2ca31-8458-484c-8e27-eb530adb905e
+Accept: application/json
+Content-Type: application/json;charset=UTF-8
+Authorization: Bearer {{bearer}}
+
+
+### Get Deployment Details
+
+get https://api.mgmt.cloud.vmware.com/blueprint/api/blueprint-deployments/80fd1970-dc1b-4256-9581-3ed087b88b0d
+Accept: application/json
+Content-Type: application/json;charset=UTF-8
+Authorization: Bearer {{bearer}}
+
+###
+
+
+get https://api.mgmt.cloud.vmware.com/deployment/api/deployments/80fd1970-dc1b-4256-9581-3ed087b88b0d?expandResources=true
+Accept: application/json
+Content-Type: application/json;charset=UTF-8
+Authorization: Bearer {{bearer}}
+
+
+###
+get https://api.mgmt.cloud.vmware.com/blueprint/api/blueprint-deployments/80fd1970-dc1b-4256-9581-3ed087b88b0d
+Accept: application/json
+Content-Type: application/json;charset=UTF-8
+Authorization: Bearer {{bearer}}
+
+###
+
+get https://api.mgmt.cloud.vmware.com/blueprint/api/blueprint-deployments/80fd1970-dc1b-4256-9581-3ed087b88b0d
+Accept: application/json
+Content-Type: application/json;charset=UTF-8
+Authorization: Bearer {{bearer}}
+
+### Get Deployment actions
+
+GET https://api.mgmt.cloud.vmware.com/deployment/api/deployments/c2dd1d11-611b-4ae6-b2f9-cbd41ef4206f/actions
+Accept: application/json
+Content-Type: application/json;charset=UTF-8
+Authorization: Bearer {{bearer}}
+
+### Deployment Update
+
+POST https://api.mgmt.cloud.vmware.com/deployment/api/deployments/c2dd1d11-611b-4ae6-b2f9-cbd41ef4206f/requests
+Accept: application/json
+Content-Type: application/json;charset=UTF-8
+Authorization: Bearer {{bearer}}
+
+{
+  "actionId": "Deployment.Update",
+  "inputs": {
+    "FECount": 3,
+    "application": "Tito",
+    "environment": "dev",
+    "cloud_target": "platform:aws",
+    "wavefront_proxy": "vmware.wavefront.com"
+  },
+  "reason": "scale out"
+}

@@ -1,0 +1,14 @@
+
+{
+    "description": "",
+    "status": "NONE",
+    "yaml": "---\r\nruntime: \"nodejs\"\r\ncode: |\r\n    var context = require(\"./context.js\")\r\n    let ip = \"\" ;\r\n    const deploymentDet = context.getInput(\"deploymentDetails\");\r\n    const node = context.getInput(\"nodeName\");\r\n    \"\"\r\n    //console.log(deploymentDet);\r\n    \r\n    const deployments = JSON.parse(deploymentDet);\r\n    \r\n    console.log(\"deployments: \" + deployments.length);\r\n    \r\n    for(let i = 0; i < deployments.length;i++){\r\n    \r\n        if(deployments[i] && deployments[i].hasOwnProperty('resources') ){\r\n            console.log(JSON.stringify(deployments[i]));\r\n            ip = deployments[i]['resources'][node] ? deployments[i]['resources'][node]['address'] : deployments[i]['resources'][node+'[0]']['address'] ;\r\n            break;\r\n        \r\n        }\r\n    }\r\n    \r\n\r\n    context.setOutput(\"ipAddress\", ip);\r\n\r\ninputProperties:\r\n  - name: deploymentDetails\r\n    type: text\r\n    title: deploymentDetails\r\n    placeHolder: deploymentDetails\r\n    bindable: true\r\n    labelInfo: true\r\n    labelMessage: parse deployment details to get IP\r\n  - name: nodeName\r\n    type: text\r\n    title: nodeName\r\n    placeHolder: nodeName\r\n    bindable: true\r\n    labelInfo: true\r\n    labelMessage: resource node name\r\noutputProperties:\r\n  - name: ipAddress\r\n    type: label\r\n    title: IP Address\r\n    ",
+    "version": "draft",
+    "name": "deployment",
+    "kind": "CustomIntegration",
+    "tags": [],
+    "_link": "/pipeline/api/custom-integrations/b584083a85ebea7558b18ffb8affc",
+    "_createdBy": "slynch",
+    "_updatedBy": "slynch",
+    "_updateTimeInMicros": 1561555479511001
+}

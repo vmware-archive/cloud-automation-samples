@@ -1,0 +1,512 @@
+#
+# VMware Cloud Automation Pipeline Sample
+#
+# Copyright 2019 VMware, Inc. All rights reserved
+#
+# The BSD-2 license (the "License") set forth below applies to all parts of the
+# Cloud-automation-samples Code project. You may not use this file except in compliance
+# with the License.
+#
+# BSD-2 License
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+# 
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+---
+project: echidna
+kind: PIPELINE
+name: Validate Application - Tito
+enabled: true
+concurrency: 10
+input:
+  abxRoute53id: 8a7689dd6badd9cb016bb5014cb908ab
+  loadTestUsers: '500'
+  loadHatchRate: '50'
+  slackOauthToken: SLACK_TOKEN_HERE
+  casToken: CAS_TOKEN_HERE
+  wavefrontDashboard: https://surf.wavefront.com/u/lG9PxZHfjl
+  slackChannel: operationsaas-sre
+  webResourceName: Cloud_LoadBalancer_1
+  colorGood: '#36a64f'
+  GIT_EVENT_OWNER_NAME: ''
+  sitePort: '80'
+  sshHost: 192.168.200.242
+  testSpecPath: /home/testrunner/titoactions.spec.js
+  cloudProvider: AWS
+  colorWarn: '#ff0000'
+  executeTest: 'false'
+  WAVEFRONT_PROXY: ec2-54-153-128-0.ap-southeast-2.compute.amazonaws.com
+  projectId: 7ea6e1b3-660f-49c9-8937-4f6323cbb096
+  websiteBase: /Tito/
+  GIT_CHANGE_SUBJECT: ''
+output:
+  frontendIP: ${Deploy.Get Website IP.output.properties.ipAddress}
+ciWorkspace:
+  endpoint: Shared Docker Host
+  image: node:10
+  registry: ''
+  path: ''
+  cache:
+  - ''
+stageOrder:
+- Deploy
+- Test
+- Release
+stages:
+  Test:
+    taskOrder:
+    - Cypress - UI Validation
+    - SlackNotifyUI-pass,SlackNotifyUI-fail,SlackNotifyUI-Null
+    - Locust Load Test
+    - SlackNotifyLocust-pass,SlackNotifyLocust-fail,SlackNotifyLocust-Null
+    - CondiationalScaleOut
+    - Scale Out vSphere,Scale Out AWS,Scale Out GCP,Scale Out Azure
+    - Locust Load Test-1
+    tasks:
+      SlackNotifyLocust-pass:
+        type: Custom
+        preCondition: ${Test.Locust Load Test.output.exitCode} == 0
+        input:
+          name: SlackBotThreadedAttachments
+          version: '1.8'
+          properties: {
+            channel: '${input.slackChannel}',
+            message: ' :tada: *Successful* -  completion of Locust Load test automation for http://${Deploy.Get
+              Website IP.output.properties.ipAddress}, you can view load test metrics in Wavefront ${input.wavefrontDashboard}',
+            colorHex: '${input.colorGood}',
+            authToken: '${input.slackOauthToken}',
+            slackThread: '${Deploy.SlackNotify.output.properties.slackThreadId}',
+            parentMessage: '',
+            messageHeading: Codestream Notification
+          }
+      Cypress - UI Validation:
+        type: SSH
+        ignoreFailure: true
+        endpoints:
+          agent: SSH Host
+        input:
+          privatekey: ''
+          password: CHANGE PASSWORD
+          workingDirectory: ''
+          environmentVariables: {
+            }
+          host: ${input.sshHost}
+          arguments: [
+            ]
+          passphrase: ''
+          script: "export SLACK_USER_TOKEN=\"${input.slackOauthToken}\"\r\nexport SLACK_THREAD=\"${Deploy.SlackNotify.output.properties.slackThreadId}\"\
+            \r\nexport PATH=$PATH:/usr/bin/:/usr/local/bin/:/home/testrunner/node_modules/.bin/\r\nsudo\
+            \ /home/testrunner/node_modules/.bin/cypress run --spec ${input.testSpecPath} --reporter json\
+            \ --env host=http://${Deploy.Get Website IP.output.properties.ipAddress}${input.websiteBase}\
+            \ && echo $? || python3 /home/testrunner/slackUpload.py && echo $?"
+          username: testrunner
+      Scale Out vSphere:
+        type: Blueprint
+        preCondition: ${Test.Locust Load Test.output.exitCode} > 0 && ${input.cloudProvider} == "VSPHERE"
+        input:
+          blueprint: Tito v3
+          _deploymentFlag: false
+          action: UpdateDeployment
+          allowDestroy: false
+          deploymentName: ${Deploy.Deploy AWS.output.deploymentName}
+          version: '1.4'
+          parameters: {
+            FECount: '2',
+            application: Tito,
+            environment: dev,
+            cloud_target: 'platform:vsphere',
+            wavefront_proxy: vmware.wavefront.com
+          }
+      SlackNotifyUI-fail:
+        type: Custom
+        preCondition: ${Test.Cypress - UI Validation.output.exitCode} > 0
+        input:
+          name: SlackBotThreadedAttachments
+          version: '1.8'
+          properties: {
+            channel: '${input.slackChannel}',
+            message: Cypress UI validation failed tests.,
+            colorHex: '${input.colorWarn}',
+            authToken: '${input.slackOauthToken}',
+            slackThread: '${Deploy.SlackNotify.output.properties.slackThreadId}',
+            parentMessage: '',
+            messageHeading: Codestream Notification
+          }
+      Locust Load Test-1:
+        type: SSH
+        ignoreFailure: true
+        preCondition: ${Test.Locust Load Test.output.exitCode} > 0
+        endpoints:
+          agent: SSH Host
+        input:
+          privatekey: ''
+          password: CHANGE PASSWORD
+          workingDirectory: ''
+          environmentVariables: {
+            }
+          host: ${input.sshHost}
+          arguments: [
+            ]
+          passphrase: ''
+          script: |-
+            export WAVEFRONT_PROXY='${input.WAVEFRONT_PROXY}'
+            export WEBSITE_ADDRESS="${Deploy.Get Website IP.output.properties.ipAddress}"
+            export PATH=$PATH:/usr/bin/:/usr/local/bin/
+
+            locust -f /usr/local/bin/locust_files/locustWavefront.py -c ${input.loadTestUsers} -r ${input.loadHatchRate} -t 5m --no-web --only-summary --host http://${Deploy.Get Website IP.output.properties.ipAddress}
+          username: testrunner
+      Scale Out AWS:
+        type: Blueprint
+        preCondition: ${Test.Locust Load Test.output.exitCode} > 0 && ${input.cloudProvider} == "AWS"
+        input:
+          blueprint: Tito v3
+          _deploymentFlag: false
+          action: UpdateDeployment
+          allowDestroy: false
+          deploymentName: ${Deploy.Deploy AWS.output.deploymentName}
+          version: '1.4'
+          parameters: {
+            FECount: '2',
+            application: Tito,
+            environment: dev,
+            cloud_target: 'platform:aws',
+            wavefront_proxy: vmware.wavefront.com
+          }
+      Scale Out Azure:
+        type: Blueprint
+        preCondition: ${Test.Locust Load Test.output.exitCode} > 0 && ${input.cloudProvider} == "AZURE"
+        input:
+          blueprint: Tito v3
+          _deploymentFlag: false
+          action: UpdateDeployment
+          allowDestroy: false
+          deploymentName: ${Deploy.Deploy AWS.output.deploymentName}
+          version: '1.3'
+          parameters: {
+            FECount: '2',
+            application: Tito,
+            environment: '',
+            cloud_target: 'platform:azure',
+            wavefront_proxy: vmware.wavefront.com
+          }
+      SlackNotifyUI-pass:
+        type: Custom
+        ignoreFailure: true
+        preCondition: ${Test.Cypress - UI Validation.output.exitCode} == 0
+        input:
+          name: SlackBotThreadedAttachments
+          version: '1.8'
+          properties: {
+            channel: '${input.slackChannel}',
+            message: ':tada: *Successful* -  completion of Cypress UI test automation for http://${Deploy.Get
+              Website IP.output.properties.ipAddress}${input.websiteBase} ',
+            colorHex: '${input.colorGood}',
+            authToken: '${input.slackOauthToken}',
+            slackThread: '${Deploy.SlackNotify.output.properties.slackThreadId}',
+            messageHeading: Codestream Notification
+          }
+      Scale Out GCP:
+        type: Blueprint
+        preCondition: ${Test.Locust Load Test.output.exitCode} > 0 && ${input.cloudProvider} == "GCP"
+        input:
+          blueprint: Tito v3
+          _deploymentFlag: false
+          action: UpdateDeployment
+          allowDestroy: false
+          deploymentName: ${Deploy.Deploy AWS.output.deploymentName}
+          version: '1.3'
+          parameters: {
+            FECount: '3',
+            application: Tito,
+            environment: dev,
+            cloud_target: 'platform:gcp',
+            wavefront_proxy: vmware.wavefront.com
+          }
+      Locust Load Test:
+        type: SSH
+        ignoreFailure: true
+        endpoints:
+          agent: SSH Host
+        input:
+          privatekey: ''
+          password: CHANGE PASSWORD
+          workingDirectory: ''
+          environmentVariables: {
+            }
+          host: ${input.sshHost}
+          arguments: [
+            ]
+          passphrase: ''
+          script: |-
+            export WAVEFRONT_PROXY='${input.WAVEFRONT_PROXY}'
+            export WEBSITE_ADDRESS="${Deploy.Get Website IP.output.properties.ipAddress}"
+            export PATH=$PATH:/usr/bin/:/usr/local/bin/
+
+            locust -f /usr/local/bin/locust_files/locustWavefront.py -c ${input.loadTestUsers} -r ${input.loadHatchRate} -t 5m --no-web --only-summary --host http://${Deploy.Get Website IP.output.properties.ipAddress}
+          username: testrunner
+      CondiationalScaleOut:
+        type: UserOperation
+        preCondition: ${Test.Locust Load Test.output.exitCode} > 0
+        input:
+          summary: Failed Load Test
+          pipelineName: ${name}
+          expirationInDays: 3
+          approverGroups: [
+            slynch@vmware.com]
+          approvers: [
+            slynch@vmware.com]
+          description: '        Your deployment failed the Locust web load test with ${input.loadTestUsers}
+            test users per second, at a create rate of ${input.loadHatchRate}.'
+          sendemail: false
+      SlackNotifyLocust-fail:
+        type: Custom
+        preCondition: ${Test.Locust Load Test.output.exitCode} > 0
+        input:
+          name: SlackBotThreadedAttachments
+          version: '1.8'
+          properties: {
+            channel: '${input.slackChannel}',
+            message: '*Failed* -  completion of Locust Load test automation for http://${Deploy.Get Website
+              IP.output.properties.ipAddress}/tito/, you can view load test metrics in Wavefront ${input.wavefrontDashboard}.
+              The pipeline has been pause to allow you to analyse the result, you can optionally scale
+              outy our deployment and retest. To proceed with scale out visit ${executionUrl}',
+            colorHex: '${input.colorWarn}',
+            authToken: '${input.slackOauthToken}',
+            slackThread: '${Deploy.SlackNotify.output.properties.slackThreadId}',
+            parentMessage: '',
+            messageHeading: Codestream Notification
+          }
+      SlackNotifyUI-Null:
+        type: Custom
+        preCondition: '"${Test.Cypress - UI Validation.output.exitCode}" == "null"'
+        input:
+          name: SlackBotThreadedAttachments
+          version: '1.8'
+          properties: {
+            channel: '${input.slackChannel}',
+            message: 'Cypress UI validation failed to start, check ssh connectivty',
+            colorHex: '${input.colorWarn}',
+            authToken: '${input.slackOauthToken}',
+            slackThread: '${Deploy.SlackNotify.output.properties.slackThreadId}',
+            parentMessage: '',
+            messageHeading: Codestream Notification
+          }
+      SlackNotifyLocust-Null:
+        type: Custom
+        preCondition: '"${Test.Locust Load Test.output.exitCode}" == "null"'
+        input:
+          name: SlackBotThreadedAttachments
+          version: '1.8'
+          properties: {
+            channel: '${input.slackChannel}',
+            message: '*Did not execute* - Locust Load test failed to start, check SSH connectivity',
+            colorHex: '${input.colorWarn}',
+            authToken: '${input.slackOauthToken}',
+            slackThread: '${Deploy.SlackNotify.output.properties.slackThreadId}',
+            parentMessage: '',
+            messageHeading: Codestream Notification
+          }
+  Deploy:
+    taskOrder:
+    - SlackNotify
+    - Deploy vSphere,Deploy AWS,Deploy GCP,Deploy Azure
+    - Get Website IP
+    - Poll Application
+    tasks:
+      Deploy Azure:
+        type: Blueprint
+        preCondition: ${input.cloudProvider} == "AZURE"
+        input:
+          blueprint: Tito v3
+          action: CreateDeployment
+          deploymentName: ''
+          version: '1.3'
+          parameters: {
+            FECount: '1',
+            application: Tito,
+            environment: dev,
+            cloud_target: 'platform:azure',
+            wavefront_proxy: vmware.wavefront.com
+          }
+      Deploy GCP:
+        type: Blueprint
+        preCondition: ${input.cloudProvider} == "GCP"
+        input:
+          blueprint: Tito v3
+          action: CreateDeployment
+          deploymentName: ''
+          version: '1.3'
+          parameters: {
+            FECount: '1',
+            application: Tito,
+            environment: dev,
+            cloud_target: 'platform:gcp',
+            wavefront_proxy: vmware.wavefront.com
+          }
+      SlackNotify:
+        type: Custom
+        ignoreFailure: true
+        input:
+          name: SlackBotThreadedAttachments
+          version: '1.8'
+          properties: {
+            channel: '${input.slackChannel}',
+            message: 'A new deploy has been triggered by git commit "${input.GIT_CHANGE_SUBJECT}" by ${input.GIT_EVENT_OWNER_NAME},
+              you can monitor pipeline progress here ${executionUrl}',
+            colorHex: '${input.colorGood}',
+            authToken: '${input.slackOauthToken}',
+            slackThread: '',
+            messageHeading: Codestream Notification
+          }
+      Get Website IP:
+        type: Custom
+        ignoreFailure: true
+        input:
+          name: deployment
+          version: '2.80'
+          properties: {
+            nodeName: '${input.webResourceName}',
+            deploymentDetails: '[${Deploy.Deploy vSphere.output.deploymentDetails} , ${Deploy.Deploy AWS.output.deploymentDetails}]'
+          }
+      Deploy vSphere:
+        type: Blueprint
+        preCondition: ${input.cloudProvider} == "VSPHERE"
+        input:
+          blueprint: Tito v3
+          action: CreateDeployment
+          deploymentName: ''
+          version: '1.4'
+          parameters: {
+            FECount: '1',
+            application: Tito,
+            environment: dev,
+            cloud_target: 'platform:vsphere',
+            wavefront_proxy: vmware.wavefront.com
+          }
+      Deploy AWS:
+        type: Blueprint
+        preCondition: ${input.cloudProvider} == "AWS"
+        input:
+          blueprint: Tito v3
+          action: CreateDeployment
+          deploymentName: ''
+          version: '1.4'
+          parameters: {
+            FECount: '1',
+            application: Tito,
+            environment: dev,
+            cloud_target: 'platform:aws',
+            wavefront_proxy: vmware.wavefront.com
+          }
+      Poll Application:
+        type: CI
+        ignoreFailure: true
+        input:
+          process: [
+            ]
+          steps: [
+            '#!/bin/bash',
+            set +e,
+            attempt_counter=0,
+            max_attempts=50,
+            '',
+            while true,
+            do,
+            '  STATUS=$(curl -s -f -o /dev/null -w ''%{http_code}'' http://${Deploy.Get Website IP.output.properties.ipAddress}:${input.sitePort}${input.websiteBase})',
+            '  if [ $STATUS -eq 200 ]; then',
+            '    echo "Got 200! All done!"',
+            '    break',
+            '  else',
+            '    echo "Got $STATUS :( Not done yet..."',
+            '  fi',
+            '  attempt_counter=$(($attempt_counter+1))',
+            '  sleep 10',
+            '  if [ $attempt_counter -eq $max_attempts ];then',
+            '      echo "Max attempts reached"',
+            '      exit 1',
+            '  ',
+            done]
+          export: [
+            ]
+          artifacts: [
+            ]
+  Release:
+    taskOrder:
+    - Get_CAS_Token
+    - BlueGreenRoute53ABX
+    - Poll_ABX_Completion
+    tasks:
+      Poll_ABX_Completion:
+        type: POLL
+        preCondition: '${input.cloudProvider} == "AWS" && ((${Test.Cypress - UI Validation.output.exitCode}
+          == 0 && ${Test.Locust Load Test.output.exitCode} == 0 ) || (${Test.Cypress - UI Validation.output.exitCode}
+          == 0 && ${Test.Locust Load Test-1.output.exitCode} == 0 )) '
+        input:
+          ignoreFailure: true
+          headers: {
+            Accept: application/json,
+            Content-Type: application/json,
+            Authorization: 'Bearer ${Release.Get_CAS_Token.output.responseBody.token}'
+          }
+          exitCriteria: {
+            failure: runState != "COMPLETED",
+            success: runState == "COMPLETED"
+          }
+          pollCount: 30
+          pollIntervalSeconds: '60'
+          url: https://api.mgmt.cloud.vmware.com/abx/api/resources/action-runs/${Release.BlueGreenRoute53ABX.output.responseBody.id}
+      BlueGreenRoute53ABX:
+        type: REST
+        ignoreFailure: true
+        preCondition: '${input.cloudProvider} == "AWS" && ((${Test.Cypress - UI Validation.output.exitCode}
+          == 0 && ${Test.Locust Load Test.output.exitCode} == 0 ) || (${Test.Cypress - UI Validation.output.exitCode}
+          == 0 && ${Test.Locust Load Test-1.output.exitCode} == 0 )) '
+        input:
+          headers: {
+            Accept: application/json,
+            Content-Type: application/json,
+            Authorization: 'Bearer ${Release.Get_CAS_Token.output.responseBody.token}'
+          }
+          payload: |-
+            {
+                "projectId": "7ea6e1b3-660f-49c9-8937-4f6323cbb096",
+                "inputs": {
+                "name": "tito.vmwapj.com",
+                "region": "ap-southeast-2",
+                "zoneId": "Z1DXP5AZ44Z4IY",
+                "DNSName": "dualstack.${Deploy.Get Website IP.output.properties.ipAddress}",
+                "aliasHostedZoneId": "Z1GM3OXH4ZPM65"
+              }
+            }
+          action: post
+          url: https://api.mgmt.cloud.vmware.com/abx/api/resources/actions/${input.abxRoute53id}/action-runs
+      Get_CAS_Token:
+        type: REST
+        input:
+          headers: {
+            Accept: application/json,
+            Content-Type: application/json
+          }
+          payload: '{"refreshToken": ${input.casToken} }'
+          action: post
+          url: https://api.mgmt.cloud.vmware.com/iaas/login

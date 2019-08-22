@@ -1,0 +1,172 @@
+#
+# VMware Cloud Automation Pipeline Sample
+#
+# Copyright 2019 VMware, Inc. All rights reserved
+#
+# The BSD-2 license (the "License") set forth below applies to all parts of the
+# Cloud-automation-samples Code project. You may not use this file except in compliance
+# with the License.
+#
+# BSD-2 License
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+# 
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+---
+runtime: "nodejs"
+code: |
+    var https = require('https');
+    var context = require("./context.js")
+    
+    //Get the entered message from task config page and assign it to message var
+    var message = context.getInput("message");
+    var parentMessage = context.getInput("parentMessage");
+    var channel = context.getInput("channel");
+    var auth_token = context.getInput("authToken");
+    var slackThread = context.getInput("slackThread");
+    var colorHex = context.getInput("colorHex");
+    var messageHeading = context.getInput("messageHeading");
+    
+    var slackPayload = JSON.stringify(
+    {
+        channel: channel, // Slack user or channel, where you want to send the message
+        text: parentMessage,
+        thread_ts: slackThread,
+        attachments: [
+            {
+                "fallback": message,
+                "color": colorHex,
+                "title": messageHeading,
+                "text": message,
+                "ts": slackThread
+            }
+        ]
+    });
+
+    const options = {
+        hostname: 'slack.com',
+        port: 443,
+        path: '/api/chat.postMessage',
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Length': Buffer.byteLength(slackPayload),
+        "Authorization": "Bearer " + auth_token
+    }
+    };
+    
+    // Makes a https request and sets the output with statusCode which 
+    // will be displayed in task result page after execution
+    
+    const req = https.request(options, (res) => {
+        //    context.setOutput("statusCode", res.statusCode);
+        let data = '';
+
+        // A chunk of data has been recieved.
+        res.on('data', (chunk) => {
+            data += chunk;
+        });
+        
+        console.log(res.statusCode)
+        context.setOutput("statusCode", res.statusCode);
+        
+        
+        res.on('end', () => {
+            var response = JSON.parse(data);
+            context.setOutput("slackThreadId", response.ts)
+            context.setOutput("slackResponse", data);
+        });
+
+    });
+
+    req.on('error', (e) => {
+    console.error(e);
+    });
+    req.write(slackPayload);
+    req.end();
+inputProperties:
+  - name: message
+    type: text
+    title: Message
+    placeHolder: Message for Slack Channel
+    defaultValue: Hello Slack
+    bindable: true
+    labelInfo: true
+    labelMessage: This message would be posted to the Slack channel
+  - name: parentMessage
+    type: text
+    title: parentMessage
+    placeHolder: parentMessage for Slack Channel
+    defaultValue: Hello Slack or null
+    bindable: true
+    labelInfo: true
+    labelMessage: This message would be posted to the Slack channel
+  - name: channel
+    type: text
+    title: channel
+    placeHolder: slack channel here
+    defaultValue: slack channel here
+    bindable: true
+    labelInfo: true
+    labelMessage: slack channel here
+  - name: authToken
+    type: text
+    title: authToken
+    placeHolder: Bot authToken
+    defaultValue: Bot authToken
+    bindable: true
+    labelInfo: true
+    labelMessage: Bot authToken
+  - name: slackThread
+    type: text
+    title: slackThread
+    placeHolder: slackThreadId
+    defaultValue: slackThread or null
+    bindable: true
+    labelInfo: true
+    labelMessage: slackThread for reposting to same thread can also be null
+  - name: messageHeading
+    type: text
+    title: messageHeading
+    placeHolder: messageHeading
+    defaultValue: slackThread or null
+    bindable: true
+    labelInfo: true
+    labelMessage: Message Heading
+  - name: colorHex
+    type: text
+    title: colorHex
+    placeHolder: colorHex
+    defaultValue: colorHex
+    bindable: true
+    labelInfo: true
+    labelMessage: Color in hex for color coding messages
+outputProperties:
+  - name: slackResponse
+    type: label
+    title: slackResponse
+  - name: slackThreadId
+    type: label
+    title: slackThreadId
+  - name: statusCode
+    type: label
+    title: Status Code
