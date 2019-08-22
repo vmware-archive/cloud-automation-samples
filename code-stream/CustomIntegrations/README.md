@@ -1,4 +1,4 @@
-# OPERATION SAAS
+# cloud-automation-samples
 
 This section of code-stream repository contains samples related to Custom Integrations. We have following custom integrations:
 
