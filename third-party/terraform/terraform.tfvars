@@ -1,0 +1,8 @@
+aws_access_key_id="<AccessID>"
+aws_secret_access_key="<AccessKey>"
+vpc_region= "us-east-1"
+vpc_name="VPCDEVTERRAFORM"
+vpc_cidr_block="10.194.0.0/16"
+vpc_public_subnet_cidr="10.194.10.0/24"
+vpc_private_subnet_cidr="10.194.20.0/24"
+aws_region= "us-east-1"
