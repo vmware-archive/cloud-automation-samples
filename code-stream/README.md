@@ -1,4 +1,4 @@
-# OPERATION SAAS
+# cloud-automation-samples
 
 VMware Code Stream provides release automation and continuous delivery to enable frequent, reliable releases of infrastructure and applications. 
 The new deployment is triggered via a commit to Git which results in pipeline execution via a webhook.
