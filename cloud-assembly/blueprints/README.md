@@ -1,4 +1,4 @@
-# OPERATION SAAS
+# cloud-automation-samples
 
 This section of code-assembly repository contains samples related to blueprints. 
 
