@@ -1,0 +1,125 @@
+#
+# VMware Cloud Automation Blueprint Sample
+#
+# Copyright 2019 VMware, Inc. All rights reserved
+#
+# The BSD-2 license (the "License") set forth below applies to all parts of the
+# Cloud-automation-samples Code project. You may not use this file except in compliance
+# with the License.
+#
+# BSD-2 License
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+# 
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+formatVersion: 1
+name: bp-tito-wavefrontproxy
+version: 1.3
+inputs:
+  wavefrontURL:
+    type: string
+    default: vmware.wavefront.com
+  wavefrontToken:
+    type: string
+    encrypted: true
+    default: c89bfb0a-5b72-48d6-a7c9-7d86a8fd0ecc
+  application:
+    type: string
+    default: tito
+    readOnly: true
+  environment:
+    type: string
+    description: App Environment
+    default: production
+    enum:
+      - dev
+      - test
+      - production
+  cloud_target:
+    type: string
+    description: Select target cloud
+    enum:
+      - 'target:aws'
+      - 'target:azure'
+      - 'target:gcp'
+      - 'target:vsphere'
+  azureresourcegrp:
+    type: string
+    description: Azure Resource Group
+    default: ''
+    enum:
+      - ''
+      - operationsaas
+      - planes
+      - test
+  SSHkey:
+    type: string
+    description: VM SSH Key
+    default: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
+resources:
+  Cloud_LoadBalancer_1:
+    type: Cloud.LoadBalancer
+    properties:
+      name: TITOLoadBalancer
+      resourceGroupName: '${input.azureresourcegrp}'
+      routes:
+        - instancePort: 2878
+          instanceProtocol: tcp
+          protocol: tcp
+          port: 2878
+      network: '${resource.Public_Cloud_Network.name}'
+      instances:
+        - '${resource.wf_proxy.id}'
+      internetFacing: true
+  wf_proxy:
+    type: Cloud.Machine
+    properties:
+      image: im-ubuntu16046
+      flavor: fl-small
+      remoteAccess:
+        authentication: publicPrivateKey
+        sshKey: '${input.SSHkey}'
+      constraints:
+        - tag: '${input.cloud_target}'
+      networks:
+        - name: '${resource.Public_Cloud_Network.name}'
+          network: '${resource.Public_Cloud_Network.id}'
+      cloudConfig: |
+        #cloud-config
+        users:
+          - name: wavefront
+            ssh-authorized-keys:
+            - ${input.SSHkey}
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: sudo
+            shell: /bin/bash
+        runcmd:
+          - 'sudo bash -c "$(curl -sL https://wavefront.com/install)" -- install --proxy --wavefront-url https://${input.wavefrontURL} --api-token ${input.wavefrontToken}'
+  Public_Cloud_Network:
+    type: Cloud.Network
+    properties:
+      name: PublicCloudNetwork
+      networkType: existing
+      constraints:
+        - tag: publicsubnet
+        - tag: '${input.environment}'

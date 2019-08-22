@@ -1,0 +1,269 @@
+#
+# VMware Cloud Automation Blueprint Sample
+#
+# Copyright 2019 VMware, Inc. All rights reserved
+#
+# The BSD-2 license (the "License") set forth below applies to all parts of the
+# Cloud-automation-samples Code project. You may not use this file except in compliance
+# with the License.
+#
+# BSD-2 License
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+# 
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+formatVersion: 1
+name: bp-tito-cloudagnostic
+version: 1.7
+inputs:
+  application:
+    type: string
+    default: tito
+    readOnly: true
+  environment:
+    type: string
+    description: App Environment
+    default: production
+    enum:
+      - dev
+      - test
+      - production
+  cloud_target:
+    type: string
+    description: Select target cloud
+    enum:
+      - 'target:vmc'
+      - 'target:aws'
+      - 'target:azure'
+      - 'target:gcp'
+      - 'target:vsphere'
+  mapsapikey:
+    type: string
+    description: google maps api key
+    default: AIzaSyCrpIQtxT14_s_DcjAQwUa5r1p1IaTO2eQ
+  SSHkey:
+    type: string
+    description: VM SSH Key
+    default: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
+  FECount:
+    type: integer
+  wavefront_proxy:
+    type: string
+    title: Wavefront proxy
+    default: Commuter-tito-00725-164904062.us-east-1.elb.amazonaws.com
+resources:
+  Cloud_LoadBalancer_1:
+    type: Cloud.LoadBalancer
+    properties:
+      name: TITOLoadBalancer
+      count: '${input.cloud_target == "target:vmc" ? 0 : 1}'
+      resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
+      routes:
+        - instancePort: 80
+          instanceProtocol: HTTP
+          protocol: HTTP
+          port: 80
+      network: '${resource.Public_Cloud_Network.name}'
+      instances: '${resource.FrontEnd.id}'
+      internetFacing: true
+  FrontEnd:
+    type: Cloud.Machine
+    dependsOn:
+      - MySQL
+    properties:
+      count: '${input.cloud_target == "target:vmc" ? 1 : input.FECount}'
+      #tags:
+      #  - key: application
+      #    value: '${input.application}'
+      #  - key: environment
+      #    value: '${input.environment}'
+      resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
+      image: im-ubuntu16046
+      flavor: fl-small
+      remoteAccess:
+        username: ubuntu
+        authentication: publicPrivateKey
+        sshKey: '${input.SSHkey}'
+      constraints:
+        - tag: '${input.cloud_target}'
+      cloudConfigSettings:
+        phoneHomeFailOnTimeout: true
+        phoneHomeShouldWait: true
+        phoneHomeTimeouSeconds: 600
+      cloudConfig: |
+        #cloud-config
+        # log all cloud-init process output (info & errors) to a logfile
+        output: {all: ">> /var/log/cloud-init-output.log"}
+        packages:
+         - git
+        runcmd:
+         - sudo apt install apache2 --assume-yes
+         - sudo git clone https://github.com/riazvm/samplecreds.git
+         - sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python-pip python-dev --assume-yes
+         - sudo apt install git php libapache2-mod-php php-mysql php-curl --assume-yes
+         - su - ubuntu
+         - eval "$(ssh-agent -s)"
+         - sudo cd /home/ubuntu/.ssh/
+         - sudo cp /samplecreds/gitcreds/id_rsa /home/ubuntu/.ssh/.
+         - sudo chmod 400 /home/ubuntu/.ssh/id_rsa
+         - eval "$(ssh-agent -s)"
+         - ssh-add -k /home/ubuntu/.ssh/id_rsa
+         - ssh -o StrictHostKeyChecking=no -T git@github.com
+         - git clone git@github.com:riazm-vmware/OperationSaaS.git
+         - cd /var/www/html
+         - sudo cp -r /OperationSaaS/Tito .
+         - sudo chmod +x Tito/asset/Deployment/CloudAssembly/apache/*
+         - sudo cp Tito/asset/Deployment/CloudAssembly/apache/dir.conf /etc/apache2/mods-enabled/dir.conf
+         - sudo printf '\n export TITODBSERVER=${resource.MySQL.networks[0].address}' >> Tito/asset/Deployment/CloudAssembly/apache/envvars
+         - sudo printf '\n export TITODBUSERNAME=Tito' >> Tito/asset/Deployment/CloudAssembly/apache/envvars
+         - sudo printf '\n export TITODBPASSWORD=VMware1!' >> Tito/asset/Deployment/CloudAssembly/apache/envvars
+         - sudo printf '\n export MAPSKEY=${input.mapsapikey}' >> Tito/asset/Deployment/CloudAssembly/apache/envvars 
+         - sudo cp Tito/asset/Deployment/CloudAssembly/apache/envvars /etc/apache2/envvars
+         - echo ${resource.MySQL.id}
+         - echo ${resource.MySQL.networks[0].address}
+         - sudo systemctl restart apache2
+         # Wavefront config
+         - 'sudo bash -c "$(curl -sL https://wavefront.com/install)" -- install --agent --proxy-address ${input.wavefront_proxy} --proxy-port 2878'
+         - [bash, /etc/telegraf/appendTags.sh]
+         - sudo systemctl restart telegraf        
+        write_files:
+         - path: /etc/telegraf/telegraf.d/apache.conf
+           permissions: '0644'
+           content: |
+            [[inputs.apache]]
+            urls = ["http://0.0.0.0/server-status?auto"]
+         - path: /etc/telegraf/appendTags.sh
+           permissions: '0644'
+           content: |
+            #!/bin/sh
+            sed '/\[global_tags\]/r'<(
+            echo 'app="${input.application}"'
+            echo 'environment="${input.environment}"'
+            ) -i -- /etc/telegraf/telegraf.conf   
+      name: FE
+      networks:
+        - name: '${resource.Public_Cloud_Network.name}'
+          network: '${resource.Public_Cloud_Network.id}'
+          assignPublicIpAddress: true
+  MySQL:
+    type: Cloud.Machine
+    properties:
+      image: im-ubuntu16046
+      flavor: fl-small
+      tags:
+        - key: application
+          value: '${input.application}'
+        - key: environment
+          value: '${input.environment}'
+      resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
+      remoteAccess:
+        username: ubuntu
+        authentication: publicPrivateKey
+        sshKey: '${input.SSHkey}'
+      constraints:
+        - tag: '${input.cloud_target}'
+      cloudConfig: |
+        #cloud-config
+        # log all cloud-init process output (info & errors) to a logfile
+        output: {all: ">> /var/log/cloud-init-output.log"}
+        runcmd:
+        - sudo apt-get update
+        - sudo git clone https://github.com/riazvm/samplecreds.git
+        - sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python-pip python-dev --assume-yes
+        - echo "mysql-server mysql-server/root_password password Tito2016" | sudo debconf-set-selections
+        - echo "mysql-server mysql-server/root_password_again password Tito2016" | sudo debconf-set-selections
+        - sudo apt-get -y install mysql-server
+        - sudo apt-get install git unzip --assume-yes
+        - su - ubuntu
+        - eval "$(ssh-agent -s)"
+        - sudo cp /samplecreds/gitcreds/id_rsa /home/ubuntu/.ssh/.
+        - sudo chmod 400 /home/ubuntu/.ssh/id_rsa
+        - eval "$(ssh-agent -s)"
+        - ssh-add -k /home/ubuntu/.ssh/id_rsa
+        - sudo cd /home/ubuntu/.ssh/
+        - ssh -o StrictHostKeyChecking=no -T git@github.com
+        - git clone git@github.com:riazm-vmware/OperationSaaS.git
+        - sudo cp -r /OperationSaaS/Tito /.
+        - sudo cp /Tito/asset/Deployment/CloudAssembly/titodb/mysqld.cnf /etc/mysql/mysql.conf.d/mysqld.cnf
+        - sudo systemctl restart mysql.service
+        - cd /Tito/asset/Deployment/CloudAssembly/titodb/
+        - sudo chmod 777 *
+        - sudo chmod +x *
+        - export MYSQL_ROOT_PASSWORD=Tito2016
+        - sudo mysql --user=root --password=$MYSQL_ROOT_PASSWORD < create-tito-db.sql
+        #wavefront
+        - 'sudo bash -c "$(curl -sL https://wavefront.com/install)" -- install --agent --proxy-address ${input.wavefront_proxy} --proxy-port 2878'
+        - sed -i 's|127.0.0.1|'$HOSTNAME'|g' /etc/telegraf/telegraf.d/mysql.conf
+        - sudo systemctl restart telegraf
+        - [bash, /etc/telegraf/appendTags.sh]
+        write_files:
+        - path: /etc/telegraf/telegraf.d/mysql.conf
+          permissions: '0644'
+          content: |
+           [[inputs.mysql]]
+            servers = ["root:Tito2016@tcp(127.0.0.1:3306)/"]
+            gather_table_schema = true
+            gather_process_list = true
+            gather_user_statistics = true
+            gather_info_schema_auto_inc = true
+            gather_innodb_metrics = true
+            gather_slave_status = true
+            gather_binary_logs = false
+            gather_table_io_waits = true
+            gather_table_lock_waits = true
+            gather_index_io_waits = true
+            gather_event_waits = true
+            gather_file_events_stats = true
+            gather_perf_events_statements = true
+            interval_slow = "30m"
+            table_schema_databases = []
+
+           [[outputs.file]]
+            files = ["stdout"]
+        - path: /etc/telegraf/appendTags.sh
+          permissions: '0644'
+          content: |
+            #!/bin/sh
+            sed '/\[global_tags\]/r'<(
+            echo 'app="${input.application}"'
+            echo 'environment="${input.environment}"'
+            ) -i -- /etc/telegraf/telegraf.conf
+      networks:
+        - name: '${Private_Cloud_Network.name}'
+          network: '${resource.Private_Cloud_Network.id}'
+      name: DB
+  Public_Cloud_Network:
+    type: Cloud.Network
+    properties:
+      name: PublicCloudNetwork
+      networkType: existing
+      constraints:
+        - tag: publicsubnet
+        - tag: '${input.environment}'
+  Private_Cloud_Network:
+    type: Cloud.Network
+    properties:
+      name: PrivateCloudNetwork
+      networkType: existing
+      constraints:
+        - tag: privatesubnet
+        - tag: '${input.environment}'
