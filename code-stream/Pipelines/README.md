@@ -1,4 +1,4 @@
-#cloud-automation-samples
+# cloud-automation-samples
 
 This section of code-stream repository contains samples related to Pipeline. We have following pipelines
 
