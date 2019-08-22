@@ -15,8 +15,11 @@ cloud-automation-samples is organized by VMware Product name and third party pro
 To use this code to its fullest potential, you must have an account on the correct VMware Solutions as well as any third party products you wish to integration. If you do not have a VMware cloud solutions account, you can access the solution pages to obtain a free trial.
 
 VMware Cloud Assembly (https://cloud.vmware.com/cloud-assembly)
+
 VMware Code Stream (https://cloud.vmware.com/code-stream)
+
 Wavefront by VMware (https://cloud.vmware.com/wavefront)
+
 vRealize Orchestrator (https://www.vmware.com/products/vrealize-orchestrator.html)
 
 You must contact the non-VMware vendors directly to obtain access to their products.
