@@ -1,0 +1,2381 @@
+{
+  "name": "tito overview",
+  "description": "This dashboard displays metrics from hosts where Telegraf is being used for system metric collection with Wavefront's output plugin.",
+  "eventFilterType": "BYCHART",
+  "eventQuery": "",
+  "defaultTimeWindow": "2h",
+  "url": "titooverview",
+  "displayDescription": false,
+  "displaySectionTableOfContents": true,
+  "displayQueryParameters": true,
+  "chartTitleScalar": 0,
+  "sections": [
+    {
+      "name": "APACHE",
+      "rows": [
+        {
+          "charts": [
+            {
+              "name": "",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "",
+                  "disabled": true,
+                  "scatterPlotSource": "Y",
+                  "querybuilderSerialization": "{\"_v\":1,\"metric\":\"\",\"filters\":[[],\"and\"],\"functions\":[]}",
+                  "querybuilderEnabled": true,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "Units",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "markdown-widget",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": true,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "plainMarkdownContent": "|  |  |\n| --- | --- |\n| ![apache http](https://s3-us-west-2.amazonaws.com/wavefront-img/apache.png) | This dashboard provides real-time visibility into the **Apache HTTP Server** status. Apache is the most widely used web server software available for free. These statistics are collected via Telegraf from the Apache HTTP Server `mod_status`. Use the pull-down menu above to select the **Source**. Detailed description of each metric can be found in the  [Apache HTTP Server](https://httpd.apache.org/docs/2.4/mod/mod_status.html) documentation.\n| | |"
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 45
+        },
+        {
+          "charts": [
+            {
+              "name": "CPU Usage",
+              "sources": [
+                {
+                  "name": "System",
+                  "query": "ts(apache.CPUSystem,  app=${app} and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "User",
+                  "query": "ts(apache.CPUUser ,  app=${app} and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "Children User",
+                  "query": "ts(apache.CPUChildrenUser ,  app=${app} and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "Children System",
+                  "query": "ts(apache.CPUChildrenSystem,  app=${app} and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "s",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "stacked-area",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": true,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": true,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "sparklineValueColorMapColors": [],
+                "sparklineValueColorMapValuesV2": []
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 100
+        },
+        {
+          "charts": [
+            {
+              "name": "Busy Worker(s)",
+              "sources": [
+                {
+                  "name": "TotalWorkers",
+                  "query": "ts(\"apache.IdleWorkers\", app=${app} and environment=${environment}) + ts(\"apache.BusyWorkers\", app=${app} and environment=${environment})",
+                  "disabled": true,
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "%",
+                  "query": "ts(\"apache.BusyWorkers\", app=${app} and environment=${environment}) / ${TotalWorkers} * 100",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "stacked-area",
+                "max": 100,
+                "min": 0,
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "top",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "rgba(255,255,255,1)",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "200",
+                "sparklineSize": "NONE",
+                "sparklineValueColorMapColors": [
+                  "rgba(134,192,66,1)",
+                  "rgba(255,224,61,1)",
+                  "rgba(217,83,79,1)"
+                ],
+                "sparklineValueColorMapValuesV2": [
+                  50,
+                  80
+                ],
+                "sparklineValueColorMapApplyTo": "BACKGROUND",
+                "sparklineDecimalPrecision": 0
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 100
+        },
+        {
+          "charts": [
+            {
+              "name": "Accesses Rate",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "rate(ts(\"apache.TotalAccesses\", app=${app} and environment=${environment}))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "#",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "stacked-area",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "sparklineValueColorMapColors": [],
+                "sparklineValueColorMapValuesV2": []
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Bytes Rate",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "rate(ts(\"apache.TotalkBytes\", app=${app} and environment=${environment}))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "B",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "stacked-area",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": true,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": true,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 100
+        }
+      ]
+    },
+    {
+      "name": "Load Tests",
+      "rows": [
+        {
+          "charts": [
+            {
+              "name": "Request Response ms",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "mavg(1m, ts(locust.response.successful, app=${app}))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "New Query",
+                  "query": "mavg(1m, ts(locust.response.failed))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "ms",
+              "base": 1,
+              "noDefaultEvents": true,
+              "interpolatePoints": true,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "stacked-area",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "LEFT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Successful vs Failed Requests",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "ts(locust.response.successful)",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "New Query",
+                  "query": "ts(locust.response.failed)",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "Units",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "stacked-area",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "showHosts": true,
+                "showLabels": true,
+                "showRawValues": false,
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "groupBySource": false,
+                "sortValuesDescending": true,
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "timeBasedColoring": false,
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "100",
+                "sparklineSize": "BACKGROUND",
+                "sparklineValueColorMapApplyTo": "TEXT"
+              },
+              "summarization": "COUNT"
+            }
+          ],
+          "heightFactor": 150
+        },
+        {
+          "charts": [
+            {
+              "name": "Request Rate",
+              "sources": [
+                {
+                  "name": "rateSuccessfulRequests",
+                  "query": "rate(ts(locust.response.successful))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "rateFailedRequests",
+                  "query": "rate(ts(locust.response.failed))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "ms",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "stackType": "bars",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "COUNT"
+            },
+            {
+              "name": "Failed Load Request Percent",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "(avg(ts(locust.response.failed))/avg(ts(locust.response.successful)))*100",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "New Query",
+                  "query": "",
+                  "disabled": true,
+                  "scatterPlotSource": "Y",
+                  "querybuilderSerialization": "{\"_v\":1,\"metric\":\"\",\"filters\":[[],\"and\"],\"functions\":[]}",
+                  "querybuilderEnabled": true,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 0,
+              "noDefaultEvents": false,
+              "interpolatePoints": true,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "sparkline",
+                "max": 100,
+                "min": 1,
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "showHosts": true,
+                "showLabels": true,
+                "showRawValues": false,
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "groupBySource": false,
+                "sortValuesDescending": true,
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT",
+                  "COUNT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "xMax": 100,
+                "xMin": 1,
+                "timeBasedColoring": false,
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "150",
+                "sparklineSize": "BACKGROUND",
+                "sparklineFillColor": "rgba(56,160,244,1)",
+                "sparklineValueColorMapColors": [
+                  "rgba(54,145,54,1)",
+                  "rgba(255,224,61,1)",
+                  "rgba(242,101,34,1)"
+                ],
+                "sparklineValueColorMapValuesV2": [
+                  10,
+                  100
+                ],
+                "sparklineValueColorMapApplyTo": "TEXT"
+              },
+              "summarization": "COUNT"
+            }
+          ],
+          "heightFactor": 150
+        }
+      ]
+    },
+    {
+      "name": "MySQL",
+      "rows": [
+        {
+          "charts": [
+            {
+              "name": "New Chart",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "",
+                  "disabled": true,
+                  "scatterPlotSource": "Y",
+                  "querybuilderSerialization": "{\"_v\":1,\"metric\":\"\",\"filters\":[[],\"and\"],\"functions\":[]}",
+                  "querybuilderEnabled": true,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "Units",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "markdown-widget",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": true,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "plainMarkdownContent": "|  |  |\n| --- | --- |\n| ![mysql](https://s3-us-west-2.amazonaws.com/wavefront-img/mysql_90px.png) | Real-time **MySQL** status.  These statistics are collected via Telegraf from the database tables in MySQL server.  For more detailed description and control over statistics collected, visit [MySQL input plugin documentation](https://github.com/influxdata/telegraf/tree/master/plugins/inputs/mysql). |"
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 68
+        },
+        {
+          "charts": [
+            {
+              "name": "Connections by User",
+              "sources": [
+                {
+                  "name": "Query",
+                  "query": "ts(\"mysql.users.connections\", app=${app} and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "#",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "stacked-area",
+                "min": 0,
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "sparklineValueColorMapColors": [],
+                "sparklineValueColorMapValuesV2": []
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Instance(s) reporting",
+              "sources": [
+                {
+                  "name": "Query",
+                  "query": "sum(count(count(ts(\"mysql.bytes.received\"), server), server))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "base": 0,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "Total number of MySQL server instances sending metrics to wavefront.",
+              "chartSettings": {
+                "type": "sparkline",
+                "windowing": "full",
+                "showHosts": true,
+                "showLabels": true,
+                "showRawValues": false,
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "groupBySource": false,
+                "sortValuesDescending": true,
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "rgba(255,255,255,1)",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "150",
+                "sparklineSize": "BACKGROUND",
+                "sparklineLineColor": "rgba(0,0,0,0.3)",
+                "sparklineFillColor": "rgba(0,0,0,0.2)",
+                "sparklineValueColorMapColors": [
+                  "rgba(73,175,217,1)",
+                  "rgba(73,175,217,1)"
+                ],
+                "sparklineValueColorMapValuesV2": [
+                  0
+                ],
+                "sparklineValueColorMapApplyTo": "BACKGROUND",
+                "sparklineDecimalPrecision": 0
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Connection(s)",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "sum(ts(\"mysql.users.connections\", app=${app} and environment=${environment}))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "Active connections to the Instance(s) selected.",
+              "chartSettings": {
+                "type": "sparkline",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "rgba(255,255,255,1)",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "150",
+                "sparklineSize": "BACKGROUND",
+                "sparklineLineColor": "rgba(0,0,0,0.3)",
+                "sparklineFillColor": "rgba(0,0,0,0.2)",
+                "sparklineValueColorMapColors": [
+                  "rgba(73,175,217,1)",
+                  "rgba(73,175,217,1)"
+                ],
+                "sparklineValueColorMapValuesV2": [
+                  0
+                ],
+                "sparklineValueColorMapApplyTo": "BACKGROUND",
+                "sparklineDecimalPrecision": 0
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 67
+        }
+      ]
+    },
+    {
+      "name": "Summary",
+      "rows": [
+        {
+          "charts": [
+            {
+              "name": "Host Dashboard",
+              "sources": [
+                {
+                  "name": "Source",
+                  "query": "",
+                  "scatterPlotSource": "Y",
+                  "querybuilderSerialization": "{\"_v\":1,\"metric\":\"\",\"filters\":[[],\"and\"],\"functions\":[]}",
+                  "querybuilderEnabled": true,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "Units",
+              "base": 0,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "markdown-widget",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "plainMarkdownContent": "This dashboard shows detailed system metrics for **${host}**. Use the dropdown menu at the top to select a different host. To add a new host, install an agent on the host using a [host integration](/integrations) for your operating system."
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Total CPU Usage (non-idle)",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "ts(\"cpu.usage.user\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "Total CPU Usage of Server",
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "TOP",
+                "fixedLegendDisplayStats": [],
+                "fixedLegendFilterSort": "BOTTOM",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "COUNT",
+                "timeBasedColoring": false,
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "rgba(255,255,255,1)",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "100",
+                "sparklineSize": "BACKGROUND",
+                "sparklineLineColor": "rgba(88,146,189,1)",
+                "sparklineFillColor": "rgba(31,112,171,1)",
+                "sparklineValueColorMapColors": [
+                  "rgba(54,130,201,1)",
+                  "rgba(255,224,61,1)",
+                  "rgba(242,101,34,1)"
+                ],
+                "sparklineValueColorMapValuesV2": [
+                  99,
+                  100
+                ],
+                "sparklineValueColorMapApplyTo": "BACKGROUND",
+                "sparklineDecimalPrecision": 1
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Total Memory Usage",
+              "sources": [
+                {
+                  "name": "used_percent",
+                  "query": "ts(\"mem.used.percent\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "Total Memory Usage of Host",
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "TOP",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "timeBasedColoring": false,
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "rgba(255,255,255,1)",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "100",
+                "sparklineSize": "BACKGROUND",
+                "sparklineLineColor": "rgba(88,146,189,1)",
+                "sparklineFillColor": "rgba(31,112,171,1)",
+                "sparklineValueColorMapColors": [
+                  "rgba(54,130,201,1)",
+                  "rgba(255,224,61,1)",
+                  "rgba(242,101,34,1)"
+                ],
+                "sparklineValueColorMapValuesV2": [
+                  90,
+                  100
+                ],
+                "sparklineValueColorMapApplyTo": "BACKGROUND",
+                "sparklineDecimalPrecision": 1
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Max Disk Usage",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "ts(\"disk.used.percent\", app=\"${app}\" and environment=${environment} and not fstype=\"squashfs\")",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "Total Disk Used for Host",
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "timeBasedColoring": false,
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "rgba(255,255,255,1)",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "100",
+                "sparklineSize": "BACKGROUND",
+                "sparklineLineColor": "rgba(88,146,189,1)",
+                "sparklineFillColor": "rgba(31,112,171,1)",
+                "sparklineValueColorMapColors": [
+                  "rgba(54,130,201,1)",
+                  "rgba(255,224,61,1)",
+                  "rgba(242,101,34,1)"
+                ],
+                "sparklineValueColorMapValuesV2": [
+                  99.9,
+                  100
+                ],
+                "sparklineValueColorMapApplyTo": "BACKGROUND",
+                "sparklineDecimalPrecision": 1
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 100
+        }
+      ]
+    },
+    {
+      "name": "CPU",
+      "rows": [
+        {
+          "charts": [
+            {
+              "name": "Total CPU Usage (non-idle)",
+              "sources": [
+                {
+                  "name": "Total",
+                  "query": "100 - avg(ts(\"cpu.usage.idle\", app=\"${app}\" and environment=${environment} and not cpu=cpu-total), sources)",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "https://metrics.wavefront.com/dashboard/collectd-host",
+              "chartSettings": {
+                "type": "stacked-area",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "timeBasedColoring": false
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Total CPU Usage Breakdown",
+              "sources": [
+                {
+                  "name": "CPU Usage",
+                  "query": "ts(\"cpu.usage.*\", app=\"${app}\" and environment=${environment} and cpu=cpu-total)",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "stacked-area",
+                "max": 100,
+                "min": 0,
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Load",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "ts(\"system.load*\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": true,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "table",
+                "lineType": "linear",
+                "windowing": "last",
+                "windowSize": 5,
+                "showHosts": false,
+                "showLabels": true,
+                "showRawValues": false,
+                "autoColumnTags": true,
+                "columnTags": "",
+                "customTags": [],
+                "groupBySource": false,
+                "sortValuesDescending": false,
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "LAST"
+            },
+            {
+              "name": "Load scaled by number of CPUs",
+              "sources": [
+                {
+                  "name": "Short term",
+                  "query": "ts(\"system.load1\", app=\"${app}\" and environment=${environment}) / ${cpu_count}",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "Mid term",
+                  "query": "ts(\"system.load5\", app=\"${app}\" and environment=${environment}) / ${cpu_count}",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "Long term",
+                  "query": "ts(\"system.load15\", app=\"${app}\" and environment=${environment}) / ${cpu_count}",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "cpu_count",
+                  "query": "count(ts(\"cpu.usage.idle\", not cpu=cpu-total and app=\"${app}\" and environment=${environment}))",
+                  "disabled": true,
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": true,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "table",
+                "lineType": "linear",
+                "windowing": "last",
+                "windowSize": 5,
+                "showHosts": false,
+                "showLabels": false,
+                "autoColumnTags": true,
+                "columnTags": ""
+              },
+              "summarization": "LAST"
+            }
+          ],
+          "heightFactor": 100
+        },
+        {
+          "charts": [
+            {
+              "name": "Idle per CPU",
+              "sources": [
+                {
+                  "name": "Idle",
+                  "query": "ts(\"cpu.usage.idle\" ,app=\"${app}\" and environment=${environment} and not cpu=cpu-total)",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Nice Usage per CPU",
+              "sources": [
+                {
+                  "name": "Nice",
+                  "query": "ts(\"cpu.usage.nice\", app=\"${app}\" and environment=${environment} and not cpu=cpu-total)",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "SoftIRQ Usage per CPU",
+              "sources": [
+                {
+                  "name": "Soft IRQ",
+                  "query": "ts(\"cpu.usage.softirq\" ,app=\"${app}\" and environment=${environment} and not cpu=cpu-total)",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 100
+        },
+        {
+          "charts": [
+            {
+              "name": "Steal Usage per CPU",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "ts(\"cpu.usage.steal\" ,app=\"${app}\" and environment=${environment} and not cpu=cpu-total)",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "System Usage per CPU",
+              "sources": [
+                {
+                  "name": "System",
+                  "query": "ts(\"cpu.usage.system\" ,app=\"${app}\" and environment=${environment} and not cpu=cpu-total)",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "User per CPU",
+              "sources": [
+                {
+                  "name": "User",
+                  "query": "ts(\"cpu.usage.user\" ,app=\"${app}\" and environment=${environment} and not cpu=cpu-total)",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Wait Usage per CPU",
+              "sources": [
+                {
+                  "name": "Wait",
+                  "query": "ts(\"cpu.usage.iowait\" ,app=\"${app}\" and environment=${environment} and not cpu=cpu-total)",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 100
+        },
+        {
+          "charts": [
+            {
+              "name": "Load Std Deviation",
+              "sources": [
+                {
+                  "name": "load",
+                  "query": "ts(\"system.load5\", app=\"${app}\" and environment=${environment})",
+                  "disabled": true,
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "New Query",
+                  "query": "(${load} - mavg(2h, ${load})) / sqrt(mvar(2h, ${load}))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "std dev",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Total CPU Usage Std Deviation",
+              "sources": [
+                {
+                  "name": "usage",
+                  "query": "100 - ts(\"cpu.usage.idle\", app=\"${app}\" and environment=${environment} and cpu=cpu-total)",
+                  "disabled": true,
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "New Query",
+                  "query": "(${usage} - mavg(2h, ${usage})) / sqrt(mvar(2h, ${usage}))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "std dev",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 100
+        }
+      ]
+    },
+    {
+      "name": "Memory",
+      "rows": [
+        {
+          "charts": [
+            {
+              "name": "Memory Use Graph",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "ts(\"mem.*\" and not \"mem*percent\" and not mem.total, app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "bytes",
+              "base": 0,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Memory use Table",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "ts(\"mem*\" and not \"mem*percent\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "bytes",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": true,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "table",
+                "windowing": "last",
+                "windowSize": 5,
+                "showHosts": false,
+                "showLabels": true,
+                "showRawValues": false,
+                "autoColumnTags": false,
+                "columnTags": "",
+                "customTags": [],
+                "groupBySource": false,
+                "sortValuesDescending": true,
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "LAST"
+            }
+          ],
+          "heightFactor": 100
+        },
+        {
+          "charts": [
+            {
+              "name": "% Used",
+              "sources": [
+                {
+                  "name": "used",
+                  "query": "ts(\"mem.used.percent\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "free",
+                  "query": "100 - ${used}",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "stacked-area",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "100",
+                "sparklineSize": "BACKGROUND",
+                "sparklineValueColorMapApplyTo": "TEXT"
+              },
+              "summarization": "LAST"
+            },
+            {
+              "name": "Swap Memory",
+              "sources": [
+                {
+                  "name": "New Query",
+                  "query": "ts(\"swap*\" and not \"swap*percent\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "bytes",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": true,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "table",
+                "lineType": "linear",
+                "windowing": "last",
+                "windowSize": 5,
+                "showHosts": false,
+                "showLabels": true,
+                "autoColumnTags": false,
+                "columnTags": ""
+              },
+              "summarization": "LAST"
+            }
+          ],
+          "heightFactor": 100
+        }
+      ]
+    },
+    {
+      "name": "Storage",
+      "rows": [
+        {
+          "charts": [
+            {
+              "name": "Disk Free vs. Disk Used (Overall) Trend",
+              "sources": [
+                {
+                  "name": "free",
+                  "query": "sum(ts(\"disk.free\", app=\"${app}\" and environment=${environment}))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "used",
+                  "query": "sum(ts(\"disk.used\", app=\"${app}\" and environment=${environment}))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "bytes",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "stacked-area",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "last",
+                "windowSize": 5,
+                "showHosts": false,
+                "showLabels": true,
+                "autoColumnTags": false,
+                "columnTags": ""
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Latest disk Free (By Volume)",
+              "sources": [
+                {
+                  "name": "Disk Free",
+                  "query": "ts(\"disk.free\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "bytes",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": true,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "table",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "last",
+                "windowSize": 5,
+                "showHosts": false,
+                "showLabels": false,
+                "showRawValues": false,
+                "autoColumnTags": false,
+                "columnTags": "",
+                "customTags": [],
+                "groupBySource": false,
+                "sortValuesDescending": false,
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "LAST"
+            },
+            {
+              "name": "Latest disk Used (By Volume)",
+              "sources": [
+                {
+                  "name": "Disk Used",
+                  "query": "ts(\"disk.used\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "bytes",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": true,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "table",
+                "lineType": "linear",
+                "windowing": "last",
+                "windowSize": 5,
+                "showHosts": false,
+                "showLabels": false,
+                "showRawValues": false,
+                "autoColumnTags": false,
+                "columnTags": "",
+                "customTags": [],
+                "groupBySource": false,
+                "sortValuesDescending": false,
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "LAST"
+            }
+          ],
+          "heightFactor": 100
+        },
+        {
+          "charts": [
+            {
+              "name": "Disk Used Percentage (By Volume)",
+              "sources": [
+                {
+                  "name": "Disk Free",
+                  "query": "ts(\"disk.used.percent\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "%",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": true,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "table",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "last",
+                "windowSize": 5,
+                "showHosts": false,
+                "showLabels": false,
+                "showRawValues": false,
+                "autoColumnTags": false,
+                "columnTags": "",
+                "customTags": [],
+                "groupBySource": false,
+                "sortValuesDescending": true,
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "LAST"
+            },
+            {
+              "name": "inodes - % Used By Volume",
+              "sources": [
+                {
+                  "name": "used",
+                  "query": "ts(\"disk.inodes.used\", app=\"${app}\" and environment=${environment})",
+                  "disabled": true,
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "total",
+                  "query": "ts(\"disk.inodes.total\", app=\"${app}\" and environment=${environment})",
+                  "disabled": true,
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                },
+                {
+                  "name": "New Query",
+                  "query": "${used} / ${total} * 100",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": true,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "table",
+                "stackType": "zero",
+                "windowing": "last",
+                "windowSize": 5,
+                "showHosts": false,
+                "showLabels": false,
+                "showRawValues": false,
+                "autoColumnTags": true,
+                "columnTags": "",
+                "customTags": [],
+                "groupBySource": false,
+                "sortValuesDescending": true,
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "LAST"
+            },
+            {
+              "name": "inodes - Free by Volume",
+              "sources": [
+                {
+                  "name": "inodes",
+                  "query": "ts(\"disk.inodes.free\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": true,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "table",
+                "windowing": "last",
+                "windowSize": 5,
+                "showHosts": false,
+                "showLabels": false,
+                "showRawValues": false,
+                "autoColumnTags": true,
+                "columnTags": "",
+                "customTags": [],
+                "groupBySource": false,
+                "sortValuesDescending": false,
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "LAST"
+            }
+          ],
+          "heightFactor": 100
+        }
+      ]
+    },
+    {
+      "name": "Network",
+      "rows": [
+        {
+          "charts": [
+            {
+              "name": "Bytes Sent",
+              "sources": [
+                {
+                  "name": "bytes sent",
+                  "query": "rate(ts(\"net.bytes.sent*\", app=\"${app}\" and environment=${environment}))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "Octets",
+              "base": 0,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Bytes Received",
+              "sources": [
+                {
+                  "name": "bytes recv",
+                  "query": "rate(ts(\"net.bytes.recv\", app=\"${app}\" and environment=${environment}))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "Octets",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 100
+        },
+        {
+          "charts": [
+            {
+              "name": "Bytes Sent Std Deviations",
+              "sources": [
+                {
+                  "name": "Std Dev",
+                  "query": "((rate(ts(\"net.bytes.sent\", app=\"${app}\" and environment=${environment})) as rt) - mavg(120m, $rt)) / sqrt(mvar(120, $rt))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "Std Dev",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Bytes Received Std Deviations",
+              "sources": [
+                {
+                  "name": "Std Dev",
+                  "query": "((rate(ts(\"net.bytes.recv\", app=\"${app}\" and environment=${environment})) as rt) - mavg(120m, $rt)) / sqrt(mvar(120, $rt))",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "secondaryAxis": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "Std Dev",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 100
+        }
+      ]
+    },
+    {
+      "name": "Misc",
+      "rows": [
+        {
+          "charts": [
+            {
+              "name": "Processes",
+              "sources": [
+                {
+                  "name": "Processes Zombies",
+                  "query": "ts(\"processes*\", app=\"${app}\" and environment=${environment} and not \"processes.total*\")",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "#",
+              "base": 0,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "chartSettings": {
+                "type": "line",
+                "lineType": "linear",
+                "stackType": "zero",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT"
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Total Processes",
+              "sources": [
+                {
+                  "name": "Source",
+                  "query": "ts(\"processes.total\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "sparkline",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "100",
+                "sparklineSize": "BOTTOM",
+                "sparklineValueColorMapApplyTo": "TEXT",
+                "sparklineDecimalPrecision": 0
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "Total Threads",
+              "sources": [
+                {
+                  "name": "Source",
+                  "query": "ts(\"processes.total.threads\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": "",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "sparkline",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "100",
+                "sparklineSize": "BOTTOM",
+                "sparklineValueColorMapApplyTo": "TEXT",
+                "sparklineDecimalPrecision": 0
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 100
+        },
+        {
+          "charts": [
+            {
+              "name": "System Uptime",
+              "sources": [
+                {
+                  "name": "Source",
+                  "query": "ts(\"system.uptime\", app=\"${app}\" and environment=${environment}) / 3600",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": " Hours",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "sparkline",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "100",
+                "sparklineSize": "BOTTOM",
+                "sparklineValueColorMapApplyTo": "TEXT",
+                "sparklineDecimalPrecision": 0
+              },
+              "summarization": "MEAN"
+            },
+            {
+              "name": "System - Number of Users Logged In",
+              "sources": [
+                {
+                  "name": "Source",
+                  "query": "ts(\"system.n.users\", app=\"${app}\" and environment=${environment})",
+                  "scatterPlotSource": "Y",
+                  "querybuilderEnabled": false,
+                  "sourceDescription": ""
+                }
+              ],
+              "units": " Users",
+              "base": 1,
+              "noDefaultEvents": false,
+              "interpolatePoints": false,
+              "includeObsoleteMetrics": false,
+              "description": "",
+              "chartSettings": {
+                "type": "sparkline",
+                "lineType": "linear",
+                "windowing": "full",
+                "autoColumnTags": false,
+                "tagMode": "all",
+                "numTags": 4,
+                "customTags": [],
+                "y1Units": "",
+                "y0ScaleSIBy1024": false,
+                "y1ScaleSIBy1024": false,
+                "y0UnitAutoscaling": false,
+                "y1UnitAutoscaling": false,
+                "fixedLegendEnabled": false,
+                "fixedLegendUseRawStats": false,
+                "fixedLegendPosition": "RIGHT",
+                "fixedLegendDisplayStats": [
+                  "CURRENT"
+                ],
+                "fixedLegendFilterSort": "TOP",
+                "fixedLegendFilterLimit": 5,
+                "fixedLegendFilterField": "CURRENT",
+                "sparklineDisplayValueType": "VALUE",
+                "sparklineDisplayColor": "",
+                "sparklineDisplayHorizontalPosition": "MIDDLE",
+                "sparklineDisplayFontSize": "100",
+                "sparklineSize": "BOTTOM",
+                "sparklineValueColorMapApplyTo": "TEXT",
+                "sparklineDecimalPrecision": 0
+              },
+              "summarization": "MEAN"
+            }
+          ],
+          "heightFactor": 100
+        }
+      ]
+    }
+  ],
+  "parameterDetails": {
+    "app": {
+      "hideFromView": false,
+      "description": null,
+      "allowAll": null,
+      "tagKey": "app",
+      "queryValue": "ts(cpu.usage.idle)",
+      "dynamicFieldType": "TAG_KEY",
+      "reverseDynSort": null,
+      "parameterType": "DYNAMIC",
+      "label": "Application",
+      "defaultValue": "defaultQuery",
+      "valuesToReadableStrings": {
+        "defaultQuery": "Tito"
+      },
+      "selectedLabel": "defaultQuery",
+      "value": "Tito"
+    },
+    "environment": {
+      "hideFromView": false,
+      "description": null,
+      "allowAll": null,
+      "tagKey": "environment",
+      "queryValue": "ts(cpu.usage.idle)",
+      "dynamicFieldType": "TAG_KEY",
+      "reverseDynSort": null,
+      "parameterType": "DYNAMIC",
+      "label": "Environment",
+      "defaultValue": "Label_3",
+      "valuesToReadableStrings": {
+        "Label_3": "dev"
+      },
+      "selectedLabel": "Label_3",
+      "value": "dev"
+    }
+  }
+}
