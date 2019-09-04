@@ -1,0 +1,85 @@
+name: bp-harbor-host
+version: 1.0 
+inputs:
+  name:
+    type: string
+    title: Record name for your Harbor instance. #ex: harbor + hostedzone name
+  username:
+    type: string
+    title: Username 
+  ssh_public_key:
+    type: string
+    title: Paste your ssh public -keyout
+resources:
+  Cloud_Service_AWS_Route53_Record_1:
+    type: Cloud.Service.AWS.Route53.Record
+    properties:
+      name: '${input.name}'
+      type: A
+      region: us-east-1
+      account: aws-us-east-1 #your cloud account integration name
+      zone_id:  #your route 53 hosted zone id
+      ttl: 300
+      records:
+        - '${Cloud_Machine_1.address}'
+  Cloud_Machine_1:
+    type: Cloud.Machine
+    properties:
+      image: Ubuntu
+      flavor: Medium
+      constraints:
+        - tag: 'platform:aws'
+      cloudConfig: |
+        #-cloud-config
+        repo_update: true
+        repo_upgrade: all
+
+        packages:
+          - nginx
+        users:
+          - name: "${input.username}"
+            ssh-authorized-keys:
+             - "${input.ssh_public_key}"
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: sudo
+            shell: /bin/bash
+
+        runcmd:
+          - apt-get update -y 
+          - apt-get install apt-transport-https ca-certificates curl software-properties-common
+          - /usr/bin/curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          - apt-key fingerprint 0EBFCD88 -y 
+          - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+          - apt-get update -y 
+          - apt-get install docker-ce -y
+          - /bin/sed -i 's@ExecStart=/usr/bin/dockerd -H fd://@ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock@' /lib/systemd/system/docker.service
+          - /bin/systemctl daemon-reload
+          - /bin/systemctl restart docker
+          - /bin/systemctl start nginx
+          - /bin/systemctl enable nginx
+          - usermod -aG docker ubuntu
+          - curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          - chmod +x /usr/local/bin/docker-compose
+          - wget https://storage.googleapis.com/harbor-releases/release-1.8.0/harbor-offline-installer-v1.8.2-rc2.tgz
+          - tar -xvzf harbor-offline-installer-v1.8.2-rc2.tgz
+          - mkdir -p /opt/harbor/ssl
+          - openssl req -subj '/CN=${input.name + ".your.domain.local"}/O=LAB/C=US' -new -newkey rsa:4096 -sha256 -days 365 -nodes -x509 -keyout /opt/harbor/ssl/harbor.key -out /opt/harbor/ssl/harbor.crt
+          - /bin/sed -i 's/^hostname.*/hostname':' ${input.name + ".vmwlatam.com"}/' /harbor/harbor.yml
+          - /bin/sed -i 's/harbor_admin_password.*/harbor_admin_password':' VMware1!/' /harbor/harbor.yml
+          - /bin/sed -i 's/  port':' 80/  port':' 8080/' /harbor/harbor.yml
+          - /bin/sed -i 's/# https':'/https':'/' /harbor/harbor.yml
+          - /bin/sed -i 's/#   port':' 443/   port':' 443/' /harbor/harbor.yml
+          - /bin/sed -i 's/#   certificate':' \/your\/certificate\/path/   certificate':' \/opt\/harbor\/ssl\/harbor.crt/' /harbor/harbor.yml
+          - /bin/sed -i 's/#   private_key':' \/your\/private\/key\/path/   private_key':' \/opt\/harbor\/ssl\/harbor.key/' /harbor/harbor.yml
+          - ./harbor/install.sh --with-clair
+      networks:
+        - network: '${resource.Cloud_Network_1.id}'
+  Cloud_Network_1:
+    type: Cloud.Network
+    properties:
+      name: default
+      networkType: existing
+      constraints:
+        - tag: 'platform:aws'
+
+
