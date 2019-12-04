@@ -19,3 +19,4 @@ We have the following sample blueprints:
 *  Tito:            Blueprint to deploy Tito Application
 *  TitoRoute53:     Blueprint to deploy Tito Application using AWS Route53 as Load Balancer
 *  WavefrontProxy:  Blueprint to deploy wavefront proxy
+*  HarborHost:	    Blueprint to deploy an Harbor host using AWS Route53
