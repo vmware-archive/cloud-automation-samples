@@ -34,3 +34,9 @@ based AWS volume, attached to one of the instances, all of which dynamically con
     * [v6]DynamicallyConfiguredInstancesVolumeAndKey: Blueprint to deploy two plug-in based AWS instances, a plug-in
 based AWS volume, attached to one of the instances and encrypted with a "classic" KMS key, all of which dynamically
 configured with the same Allocation Helpers
+    * [v7]GCPInternalTCPLoadBalancerWithBackendService: Blueprint to deploy a plug-in based GCP Internal TCP load balancer 
+with a backend service. The load balancer itself consists of a health check, firewall, backend service and forwarding rule resources, 
+all of which dynamically configured with the same Allocation Helpers. This template also deploys two GCP instance groups and two GCP 
+instances that can later be added to the instance groups deployed via this blueprint using a day2Operation, GCP console, API, GCP CLI.
+    * [v8]GCPExternalTCPLoadBalancerWithTargetPool: Blueprint to deploy a plug-in based GCP External TCP load balancer
+using GCP target pool as a backend which is created and configured prior to deploying this blueprint using GCP console, API, GCP CLI.
