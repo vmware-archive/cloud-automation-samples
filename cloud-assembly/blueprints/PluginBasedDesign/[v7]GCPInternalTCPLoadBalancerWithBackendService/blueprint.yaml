@@ -1,0 +1,246 @@
+#
+# VMware Cloud Automation Blueprint Sample
+#
+# Copyright 2023 VMware, Inc. All rights reserved
+#
+# The BSD-2 license (the "License") set forth below applies to all parts of the
+# Cloud-automation-samples Code project. You may not use this file except in compliance
+# with the License.
+#
+# BSD-2 License
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+# plug-in based Internal GCP load balancer with dynamically configured account, region,
+# availability_zone, instance_type and image_id using Compute, Flavor and Image
+# using a Compute Allocation Helper
+formatVersion: 1
+inputs:
+  first_instance_group_name:
+    type: string
+    title: Primary inst group
+  second_instance_group_name:
+    type: string
+    title: Secondary inst group
+  first_instance_name:
+    type: string
+    title: First instance name
+  second_instance_name:
+    type: string
+    title: Second instance name
+  disk_name:
+    type: string
+    title: First disk name
+  disk_name_second:
+    type: string
+    title: Second Disk Name
+  health_check_name:
+    type: string
+    title: Health check name
+  firewall_name:
+    type: string
+    title: Firewall name
+  backend_service_name:
+    type: string
+    title: Backend Service
+  forwarding_rule_name:
+    type: string
+    title: Forwarding rule name
+  internal-vip-address:
+    type: string
+    title: Intenal VIP address
+resources:
+  Allocations_Network_1:
+    type: Allocations.Network
+    properties:
+      networkType: existing
+  Allocations_Compute_1:
+    type: Allocations.Compute
+    properties:
+      constraints:
+        - tag: zone-a
+  Allocations_Compute_2:
+    type: Allocations.Compute
+    properties:
+      constraints:
+        - tag: zone-b
+  Allocations_Flavor_1:
+    type: Allocations.Flavor
+    properties:
+      flavor: n1-standard-1
+  Idem_GCP_COMPUTE_INSTANCE_1:
+    type: Idem.GCP.COMPUTE.INSTANCE
+    properties:
+      name: ${input.first_instance_name}
+      zone: ${resource.Allocations_Compute_1.selectedPlacementCompute.id}
+      account: ${resource.Allocations_Compute_1.selectedCloudAccount.name}
+      can_ip_forward: false
+      tags:
+        items:
+          - net-tag-1
+          - net-tag-2
+      machine_type: ${'/projects/' + resource.Allocations_Flavor_1.selectedCloudAccount.additionalProperties.gcp.project + '/zones/' + resource.Allocations_Compute_1.selectedPlacementCompute.id + '/machineTypes/' + resource.Allocations_Flavor_1.selectedInstanceTypeName }
+      network_interfaces:
+        - access_configs:
+            - kind: compute#accessConfig
+              name: External NAT
+              network_tier: PREMIUM
+              set_public_ptr: false
+              type: ONE_TO_ONE_NAT
+          kind: compute#networkInterface
+          name: nic0
+          network: ${resource.Allocations_Network_1.selectedNetworkDomain.id}
+          stack_type: IPV4_ONLY
+          subnetwork: ${resource.Allocations_Network_1.selectedSubnet.id}
+      disks:
+        - source: ${resource.Idem_GCP_COMPUTE_DISK_1.resource_id}
+          boot: true
+      scheduling:
+        automatic_restart: true
+        on_host_maintenance: MIGRATE
+        preemptible: false
+        provisioning_model: STANDARD
+      deletion_protection: false
+  Idem_GCP_COMPUTE_DISK_1:
+    type: Idem.GCP.COMPUTE.DISK
+    properties:
+      name: ${input.disk_name}
+      account: ${resource.Allocations_Compute_1.selectedCloudAccount.name}
+      zone: ${resource.Allocations_Compute_1.selectedPlacementCompute.id}
+      size_gb: '10'
+      physical_block_size_bytes: '4096'
+      resource_policies:
+        - ${'projects/'+ resource.Allocations_Compute_1.selectedCloudAccount.additionalProperties.gcp.project +'/regions/'+ resource.Allocations_Compute_1.selectedRegion.id + '/resourcePolicies/default-schedule-1'}
+  Idem_GCP_COMPUTE_INSTANCE_2:
+    type: Idem.GCP.COMPUTE.INSTANCE
+    properties:
+      name: ${input.second_instance_name}
+      zone: ${resource.Allocations_Compute_2.selectedPlacementCompute.id}
+      account: ${resource.Allocations_Compute_1.selectedCloudAccount.name}
+      can_ip_forward: false
+      tags:
+        items:
+          - net-tag-1
+          - net-tag-2
+      machine_type: ${'/projects/' + resource.Allocations_Flavor_1.selectedCloudAccount.additionalProperties.gcp.project + '/zones/' + resource.Allocations_Compute_2.selectedPlacementCompute.id + '/machineTypes/' + resource.Allocations_Flavor_1.selectedInstanceTypeName }
+      network_interfaces:
+        - access_configs:
+            - kind: compute#accessConfig
+              name: External NAT
+              network_tier: PREMIUM
+              set_public_ptr: false
+              type: ONE_TO_ONE_NAT
+          kind: compute#networkInterface
+          name: nic0
+          network: ${resource.Allocations_Network_1.selectedNetworkDomain.id}
+          stack_type: IPV4_ONLY
+          subnetwork: ${resource.Allocations_Network_1.selectedSubnet.id}
+      disks:
+        - source: ${resource.Idem_GCP_COMPUTE_DISK_2.resource_id}
+          boot: true
+      scheduling:
+        automatic_restart: true
+        on_host_maintenance: MIGRATE
+        preemptible: false
+        provisioning_model: STANDARD
+      deletion_protection: false
+  Idem_GCP_COMPUTE_DISK_2:
+    type: Idem.GCP.COMPUTE.DISK
+    properties:
+      name: ${input.disk_name_second}
+      account: ${resource.Allocations_Compute_1.selectedCloudAccount.name}
+      zone: ${resource.Allocations_Compute_2.selectedPlacementCompute.id}
+      size_gb: '10'
+      physical_block_size_bytes: '4096'
+      resource_policies:
+        - ${'projects/'+ resource.Allocations_Compute_1.selectedCloudAccount.additionalProperties.gcp.project +'/regions/'+ resource.Allocations_Compute_2.selectedRegion.id + '/resourcePolicies/default-schedule-1'}
+  Idem_GCP_COMPUTE_INSTANCE_GROUP_1:
+    type: Idem.GCP.COMPUTE.INSTANCE_GROUP
+    properties:
+      name: ${input.first_instance_group_name}
+      account: ${resource.Allocations_Compute_1.selectedCloudAccount.name}
+      zone: ${resource.Allocations_Compute_1.selectedPlacementCompute.id}
+      network: ${resource.Allocations_Network_1.selectedNetworkDomain.id}
+  Idem_GCP_COMPUTE_INSTANCE_GROUP_2:
+    type: Idem.GCP.COMPUTE.INSTANCE_GROUP
+    properties:
+      name: ${input.second_instance_group_name}
+      account: ${resource.Allocations_Compute_1.selectedCloudAccount.name}
+      zone: ${resource.Allocations_Compute_2.selectedPlacementCompute.id}
+      network: ${resource.Allocations_Network_1.selectedNetworkDomain.id}
+  Idem_GCP_COMPUTE_HEALTH_CHECK_1:
+    type: Idem.GCP.COMPUTE.HEALTH_CHECK
+    properties:
+      name: ${input.health_check_name}
+      account: ${resource.Allocations_Compute_1.selectedCloudAccount.name}
+      type_: TCP
+      check_interval_sec: 10
+      timeout_sec: 10
+      unhealthy_threshold: 2
+      healthy_threshold: 2
+      tcp_health_check:
+        port: 80
+        proxy_header: NONE
+  Idem_GCP_COMPUTE_FIREWALL_1:
+    type: Idem.GCP.COMPUTE.FIREWALL
+    properties:
+      name: ${input.firewall_name}
+      account: ${resource.Allocations_Compute_1.selectedCloudAccount.name}
+      network: ${resource.Allocations_Network_1.selectedNetworkDomain.id}
+      direction: INGRESS
+      target_tags:
+        - net-tag-1
+        - net-tag-2
+      allowed:
+        - ip_protocol: tcp
+          ports:
+            - ${resource.Idem_GCP_COMPUTE_HEALTH_CHECK_1.tcp_health_check.port}
+  Idem_GCP_COMPUTE_BACKEND_SERVICE_1:
+    type: Idem.GCP.COMPUTE.BACKEND_SERVICE
+    properties:
+      name: ${input.backend_service_name}
+      account: ${resource.Allocations_Compute_1.selectedCloudAccount.name}
+      health_checks:
+        - ${resource.Idem_GCP_COMPUTE_HEALTH_CHECK_1.resource_id}
+      load_balancing_scheme: INTERNAL
+      region: us-central1
+      failover_policy:
+        drop_traffic_if_unhealthy: true
+        disable_connection_drain_on_failover: true
+        failover_ratio: 1
+      backends:
+        - group: ${resource.Idem_GCP_COMPUTE_INSTANCE_GROUP_1.resource_id}
+        - group: ${resource.Idem_GCP_COMPUTE_INSTANCE_GROUP_2.resource_id}
+          failover: true
+  Idem_GCP_COMPUTE_FORWARDING_RULE_1:
+    type: Idem.GCP.COMPUTE.FORWARDING_RULE
+    properties:
+      ip_protocol: TCP
+      name: ${input.forwarding_rule_name}
+      account: ${resource.Allocations_Compute_1.selectedCloudAccount.name}
+      load_balancing_scheme: INTERNAL
+      backend_service: ${resource.Idem_GCP_COMPUTE_BACKEND_SERVICE_1.resource_id}
+      all_ports: true
+      region: ${resource.Allocations_Network_1.selectedRegion.id}
+      ip_address: ${input.internal-vip-address}

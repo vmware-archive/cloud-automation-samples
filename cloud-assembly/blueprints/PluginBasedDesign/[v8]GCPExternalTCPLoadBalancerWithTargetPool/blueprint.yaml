@@ -1,0 +1,83 @@
+#
+# VMware Cloud Automation Blueprint Sample
+#
+# Copyright 2023 VMware, Inc. All rights reserved
+#
+# The BSD-2 license (the "License") set forth below applies to all parts of the
+# Cloud-automation-samples Code project. You may not use this file except in compliance
+# with the License.
+#
+# BSD-2 License
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+# plug-in based External GCP load balancer with dynamically configured account, region,
+# availability_zone, instance_type and image_id using Compute, Flavor and Image
+# using a Compute Allocation Helper
+formatVersion: 1
+inputs:
+  firewall_name:
+    type: string
+    title: Firewall name
+  forwarding_rule_name:
+    type: string
+    title: Forwarding rule name
+  target-pool-url:
+    type: string
+    title: Target pool URL
+  vip-address:
+    type: string
+    title: VIP address
+resources:
+  Allocations_Network_1:
+    type: Allocations.Network
+    properties:
+      networkType: existing
+  Allocations_Compute_1:
+    type: Allocations.Compute
+    properties:
+      constraints:
+        - tag: zone-a
+  Idem_GCP_COMPUTE_FIREWALL_1:
+    type: Idem.GCP.COMPUTE.FIREWALL
+    properties:
+      name: ${input.firewall_name}
+      account: ${resource.Allocations_Compute_1.selectedCloudAccount.name}
+      network: ${resource.Allocations_Network_1.selectedNetworkDomain.id}
+      direction: INGRESS
+      allowed:
+        - ip_protocol: tcp
+          ports:
+            - 80
+  Idem_GCP_COMPUTE_FORWARDING_RULE_1:
+    type: Idem.GCP.COMPUTE.FORWARDING_RULE
+    properties:
+      ip_protocol: TCP
+      name: ${input.forwarding_rule_name}
+      account: ${resource.Allocations_Compute_1.selectedCloudAccount.name}
+      load_balancing_scheme: EXTERNAL
+      target: ${input.target-pool-url}
+      all_ports: true
+      region: ${resource.Allocations_Network_1.selectedRegion.id}
+      ip_address: ${input.vip-address}
